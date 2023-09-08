@@ -17,124 +17,109 @@ P.S. Здесь есть несколько вариантов решения з
 
 'use strict'
 
-// Возьмите свой код из предыдущей практики
+// Возьмите свой код из предыдущей практики. В самом низу мы обернём весь код в функции. Подробности читайте там
 
-const movieDB = {
-  movies: [
-    'Логан',
-    'Лига справедливости',
-    'Ла-ла лэнд',
-    'Одержимость',
-    'Скотт Пилигрим против...',
-  ],
-}
+//p.s. Мы обернули весь код в script.js в document.addEventListener('DOMContentLoaded', () => {весь код скрипта}. Это нужно, чтобы скрипт стал работать после того, как все элементы в DOM-дереве загрузятся. Остальной код тоже будем писать внутри этих фиигурных скобок.
 
-const advertisingSection = document.querySelector('.promo__adv')
+document.addEventListener('DOMContentLoaded', () => {
+  const movieDB = {
+    movies: [
+      'Логан',
+      'Лига справедливости',
+      'Ла-ла лэнд',
+      'Одержимость',
+      'Скотт Пилигрим против...',
+    ],
+  }
 
-const advertisingImg = advertisingSection.querySelectorAll('img')
+  const advertisingSection = document.querySelector('.promo__adv')
 
-const advertisingTitle = advertisingSection.querySelector('.promo__adv-title')
+  const advertisingImg = advertisingSection.querySelectorAll('img')
 
-const genreFilm = document.querySelector('.promo__genre')
+  const advertisingTitle = advertisingSection.querySelector('.promo__adv-title')
 
-const promoBg = document.querySelector('.promo__bg')
+  const genreFilm = document.querySelector('.promo__genre')
 
-const moviesList = document.querySelector('.promo__interactive-list')
+  const promoBg = document.querySelector('.promo__bg')
 
-const form = document.querySelector('.add') // получили форму
+  const moviesList = document.querySelector('.promo__interactive-list')
 
-const confirmBtnInForm = form.querySelector('button') // получили кнопку через форму
+  const addForm = document.querySelector('.add') // получили форму
 
-const userInputFilm = document.querySelector('.adding__input') // получили инпут куда пользователь вводит название фильма
+  const userInput = addForm.querySelector('.adding__input') // получили инпут
 
-const btnMakeMovieFavorite = form.querySelector('[type="checkbox"]') // получили кнопку для отметки любимого фильма для задания 4
+  const checkBtn = addForm.querySelector('[type="checkbox"]') // получили чекбокс чтобы сделать фильм любимым
 
-const delFilmBtns = document.querySelectorAll('.delete')
-console.log(delFilmBtns) // NodeList(5)
+  addForm.addEventListener('submit', (event) => {
+    event.preventDefault() // отменили действие по умолчанию для формы. Теперь при нажатии на кнопку страница не будет перезагружаться
+    let newFilm = userInput.value // сюда получаем фильм
+    const favoriteFilm = checkBtn.checked // сюда получаем булевое значание. Если галочка стоит - true, не стоит - false
+    if (newFilm) {
+      if (newFilm.length > 21) {
+        // Второе задание выполнено. Если длина фильма больше 21, то обрезаем и добавляем...
+        newFilm = `${newFilm[0].toUpperCase()}${newFilm
+          .slice(1, 21)
+          .toLowerCase()}...`
+      }
+      // проверяем, что инпут юзера не пустой. Если пустой, то будет false('' - всегда false). Если бы не было такой проверки, то пустые данные отправлялись в список
+      if (favoriteFilm) {
+        console.log('Добавляем любимый фильм')
+      } // Задание 4 выполнено. Если стояла галочка, то выводим в консоль сообщение
+      movieDB.movies.push(
+        `${newFilm[0].toUpperCase()}${newFilm.slice(1).toLowerCase()}`
+      ) // это делает первую букву фильма заглавной и добавляет остаточную часть названия. Просто чтобы фильмы корректно сортировались
+      createMovieList(movieDB.movies, moviesList) // выводим отсортированный список на страницу
+    }
+    event.target.reset() // эта команда будет очищать форму после отправки. Первое задание выполнено
+  })
 
-// ВОТ ТУТ НАЧИНАЕТСЯ РАБОТА С КОРЗИНАМИ
-function deleteFilm() {
-  console.log('Пока фильм')
-}
+  // Весь прошлый код из предыдущего урока мы обернём в функции для того, чтобы их можно было переиспользовать.
 
-for (let btn of delFilmBtns) {
-  btn.addEventListener('click', deleteFilm)
-}
+  // Также для удобства давайте обернём в функцию куски кода, которые чистили рекламный блок и просто вызовем её. Также функции должны быть универсальными, поэтому мы не будем привязываться к конкретным элементам advertisingImg и advertisingTitle. Мы будем использовать параметры и при вызове функции уже передадим туда нужные элементы:
 
-confirmBtnInForm.addEventListener('click', addFilmInList)
+  const deleteAdvertising = (advImgs, advTitle) => {
+    advImgs.forEach((img) => img.remove())
+    advTitle.remove()
+  }
 
-function addFilmInList(event) {
-  event.preventDefault() // Часть задания 1. Отключили стандартное поведение при нажатии на кнопку в форме. Страница не перезагружается
-  if (userInputFilm.value.trim() === '') {
-    // простая проверка на пустоту от пользователя
-    userInputFilm.value = ''
-    userInputFilm.placeholder = 'Введите что-нибудь!'
-    userInputFilm.style.border = '2px solid red'
-  } else if (
-    userInputFilm.value.length > 0 &&
-    userInputFilm.value.length <= 21
-  ) {
-    // поведение если название фильма от 1 до 21 символа
-    userInputFilm.style.borderColor = 'rgba(0, 0, 0, 0.19)'
-    let userMovie = `${userInputFilm.value[0].toUpperCase()}${userInputFilm.value.slice(
-      1
-    )}`
-    if (btnMakeMovieFavorite.checked === true) {
-      console.log('Добавлен любимый фильм')
-    } // Задание 4. Если галочка в чекбоксе стоит, то выводим в консоль, что добавлен любимый фильм
-    movieDB.movies.push(userMovie) // добавляем полученный фильм в список в movieDB
-    movieDB.movies.sort() // сортируем его
-    userInputFilm.value = ''
-    userInputFilm.placeholder = 'Что уже посмотрено...?'
-    moviesList.innerHTML = '' // чистим прошлое содержимое списка на странице
+  const makeChanges = () => {
+    genreFilm.textContent = 'Драма'
+    promoBg.style.backgroundImage = "url('img/bg.jpg')"
+  } // пока что мы не будем как-то сильно менять эту функцию. Она больше вспомогательная и сохраняет код из прошлого урока. В будущем можно попробовать унивицировать её, но пока оставим как есть
 
-    movieDB.movies.forEach((film, i) => {
-      // добавляем фильмы из отсортированного списка из movieDB в список на странице и выполняем 1 задание
-      moviesList.innerHTML += `
+  // Сделаем сортировку массива с фильмами универсальной функцией для переиспользования. Она пригодится во время отправки формы, чтобы фильмы выводились на страницу отсортированными, и во время первоначальной загрузки страницы, чтобы фильмы в спике из script.js сортировались
+
+  // sortArr(movieDB.movies) // БУДЕТ ОШИБКА, СНАЧАЛА ОБЪЯВЛЯЕМ ФУНКЦИОНАЛЬНОЕ ВЫРАЖЕНИЕ, ЗАТЕМ УЖЕ ВЫЗЫВАЕМ
+
+  const sortArr = (arr) => {
+    arr.sort()
+  } // сделали сортировку массива универсальной функцией
+
+  // Кусок кода, который выводил фильмы на экран и перезаписывал список на странице мы обернули в функцию, чтобы её можно было переиспользовать. Например, она пригодится при отправке формы с фильмом, чтобы заполнить страницу новыми фильмами. Мы сделаем её более универсальной, и добавим два параметра films(список фильмов) и parent(какой родительский блок будет перезаписывать и добавлять в него фильмы). Чтобы функция не была привязана конкретно к movieDB.movies и moviesList, а получала данные при вызове. Кроме того мы расширим эту функцию для выполнения третьего задания. После того как все фильмы будут добавлены в список, мы соберём все элементы <div class="delete"></div> и на каждый навесим слушатель события, чтобы если на него кликнули, то родитель этого элемента удалялся со страницы и из movieDB.movies
+
+  function createMovieList(films, parent) {
+    parent.innerHTML = ''
+    sortArr(films)
+    films.forEach((film, i) => {
+      parent.innerHTML += `
       <li class="promo__interactive-item">
         ${i + 1}. ${film}
         <div class="delete"></div>
       </li>`
     })
-  } else if (userInputFilm.value.length > 21) {
-    // Задание 2. Если название фильма больше 21 символа, то мы обрезаем его до 21 символа включительно и добавляем ...
-    userInputFilm.style.borderColor = 'rgba(0, 0, 0, 0.19)'
-    let userMovie = `${userInputFilm.value[0].toUpperCase()}${userInputFilm.value
-      .slice(1, 21)
-      .trim()}...`
-    if (btnMakeMovieFavorite.checked === true) {
-      console.log('Добавлен любимый фильм')
-    } // Задание 4. Если галочка в чекбоксе стоит, то выводим в консоль, что добавлен любимый фильм
-    movieDB.movies.push(userMovie)
-    movieDB.movies.sort()
-    userInputFilm.value = ''
-    userInputFilm.placeholder = 'Что уже посмотрено...?'
-    moviesList.innerHTML = ''
-
-    movieDB.movies.forEach((film, i) => {
-      // добавляем фильмы из отсортированного списка из movieDB в список на странице и выполняем 1 задание
-      moviesList.innerHTML += `
-      <li class="promo__interactive-item">
-        ${i + 1}. ${film}
-        <div class="delete"></div>
-      </li>`
+    document.querySelectorAll('.delete').forEach((trashBtn, i) => {
+      trashBtn.addEventListener('click', () => {
+        trashBtn.parentElement.remove()
+        films.splice(i, 1)
+        createMovieList(films, parent) // вызов функции внутри себя поможет перестраивать нумерацию фильма. Если мы удалим фильм из списка, то функция вызовет сама себя и перерисует список фильмов на странице, предварительно отсортировав его и добавив новую нумерацию. Если мы добавим фильм в список, то мы сначала очистим содержимое родителя, затем отсортируем новый список и выведем его на страницу
+      })
     })
   }
-}
 
-advertisingImg.forEach((img) => img.remove())
-advertisingTitle.remove()
-genreFilm.textContent = 'Драма'
-promoBg.style.backgroundImage = "url('img/bg.jpg')"
+  // Принято, что функции лучше вызывать после всех их объявления, а не сразу же вызывать под каждой. Поэтому вызовы всех функций, которые нужны для начально правильной загрузки страницы мы перенесём сюда. Также не забываем, что стрелочные функции нельзя вызывать до инициализации, поэтому не вызывайте их в код
+  deleteAdvertising(advertisingImg, advertisingTitle) // теперь реклама будет удалена с помощью функции
 
-movieDB.movies.sort()
+  makeChanges() // добавляем изменения элементов с помощью функции
 
-moviesList.innerHTML = ''
-
-movieDB.movies.forEach((film, i) => {
-  moviesList.innerHTML += `
-  <li class="promo__interactive-item">
-    ${i + 1}. ${film}
-    <div class="delete"></div>
-  </li>`
+  createMovieList(movieDB.movies, moviesList) // здесь мы впервые вызываем функцию createMovieList, чтобы при загрузке страницы вывелись те фильмы, что уже есть в списке movieDB.movies. При этом они уже будут отсортированы, благодаря функции sortArr внутри
 })
